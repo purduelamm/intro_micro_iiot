@@ -10,23 +10,26 @@ import datetime
 from data_item import Event, Sample
 from mtconnect_adapter import Adapter
 
-from pymodbus.client.sync import ModbusTcpClient
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.client import ModbusTcpClient
+from pymodbus.client.mixin import ModbusClientMixin
 
 
 # function for power meter
 def readReg(client, address, length=2, unit=1):
-    rr = client.read_holding_registers(address=address, count=length, unit=unit)
+    rr = client.read_holding_registers(
+        address=address,
+        count=length,
+        device_id=unit
+    )
+
     if rr is None or rr.isError():
         raise RuntimeError(f"Modbus read failed at address {address}: {rr}")
 
-    decoder = BinaryPayloadDecoder.fromRegisters(
-        rr.registers,
-        byteorder=Endian.Big,
-        wordorder=Endian.Big
+    return client.convert_from_registers(
+        registers=rr.registers,
+        data_type=ModbusClientMixin.DATATYPE.FLOAT32,
+        word_order="big"
     )
-    return decoder.decode_32bit_float()
 
 
 class MTConnectAdapter(object):
@@ -50,11 +53,11 @@ class MTConnectAdapter(object):
         self.adapter.add_data_item(self.avail)
 
         # Power meter Modbus TCP info
-        self.pm_ip = "192.168.1.100"
+        self.pm_ip = "127.0.0.1"
         self.pm_port = 502
         self.pm_unit = 1
 
-        self.power_reg_addr = 0000 # Address??
+        self.power_reg_addr = 0 # Address??
         self.power_reg_len = 2
 
         # Threshold for ON/OFF
@@ -71,7 +74,12 @@ class MTConnectAdapter(object):
     def adapter_stream(self):
         while True:
             try:
-                c = ModbusTcpClient(self.pm_ip, port=self.pm_port, timeout=2)
+                c = ModbusTcpClient(
+                    host=self.pm_ip,
+                    port=self.pm_port,
+                    timeout=2
+                )
+
                 if not c.connect():
                     c.close()
                     raise RuntimeError(f"Failed to connect ModbusTcpClient to {self.pm_ip}:{self.pm_port}")

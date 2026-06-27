@@ -12,24 +12,27 @@ import board
 import busio
 import adafruit_adxl34x
 
-from pymodbus.client.sync import ModbusTcpClient
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.client import ModbusTcpClient
+from pymodbus.client.mixin import ModbusClientMixin
 
 
 # function for power meter (MATCHED TO STANDALONE STYLE)
 def readReg(client, address, count=2, unit=1):
-    rr = client.read_holding_registers(address, count=count, unit=unit)
+    rr = client.read_holding_registers(
+        address=address,
+        count=count,
+        device_id=unit
+    )
 
     if rr is None or rr.isError():
         raise RuntimeError(f"Modbus read error: {rr}")
 
-    decoder = BinaryPayloadDecoder.fromRegisters(
-        rr.registers,
-        byteorder=Endian.Big,
-        wordorder=Endian.Big
+    value = client.convert_from_registers(
+        registers=rr.registers,
+        data_type=ModbusClientMixin.DATATYPE.FLOAT32,
+        word_order="big"
     )
-    value = decoder.decode_32bit_float()
+
     return value
 
 
@@ -98,9 +101,13 @@ class MTConnectAdapter(object):  # MTConnect adapter object
                 t1 = self.read_temp()
 
                 # Modbus TCP (Power meter)
-                host = "192.168.1.100"
+                host = "127.0.0.1"
                 port = 502
-                c = ModbusTcpClient(host, port=port)
+                
+                c = ModbusTcpClient(
+                    host=host,
+                    port=port
+                )
 
                 if not c.connect():
                     c.close()
