@@ -31,7 +31,7 @@ def read_temp():
 		return temp_c, temp_f
 while True:
 	temperature_celsius, temperature_fahrenheit = read_temp()
-	print(f'Temperature: {temperature_celsius:.2f} °C')
-	print(f'Temperature: {temperature_fahrenheit:.2f} °F')
+	print(f'Temperature: {temperature_celsius:.2f} C')
+	print(f'Temperature: {temperature_fahrenheit:.2f} F')
 	print('')
 	time.sleep(1)
