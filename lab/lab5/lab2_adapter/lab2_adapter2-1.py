@@ -72,7 +72,8 @@ class MTConnectAdapter(object): # MTConnect adapter object
                 now = datetime.datetime.now() # get current data time
                 
                 self.adapter.begin_gather() # start to collection
-                self.t1.set_value(str(t1)) # set SAMPLE value of h1 (temperature) data item
+                self.t1.set_value(str(t1)) 
+                # set SAMPLE value of h1 (temperature) data item
                 self.adapter.complete_gather() # end of collection
 
                 print("{} MTConnect data collection completed ... ".format(now)) # Printing out completed MTConnect collection

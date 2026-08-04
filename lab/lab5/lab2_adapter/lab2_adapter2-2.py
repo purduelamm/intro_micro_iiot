@@ -20,10 +20,11 @@ class MTConnectAdapter(object): # MTConnect adapter object
         self.adapter = Adapter((host, port))
 
         # For samples
-        self.a1 = Sample('a1') # self.a1 takes 'a2' sample data item id.
-        self.adapter.add_data_item(self.a1) # adding self.a2 in adapter
-        self.a2 = Sample('a2') # self.a1 takes 'a1' sample data item id.
-        self.adapter.add_data_item(self.a2) # adding self.a3 in adapter
+        self.a1 = Sample('a1') # self.a1 takes 'a1' sample data item id.
+        self.adapter.add_data_item(self.a1)
+        self.a2 = Sample('a2') # self.a2 takes 'a2' sample data item id.
+        self.adapter.add_data_item(self.a2)
+        # add self.a3 in adapter
 
         # For events
         ## Add more events below, if needed.
@@ -46,7 +47,7 @@ class MTConnectAdapter(object): # MTConnect adapter object
                 # Do something here
                 # To halt this loop, short-cut is CTRL+C
                 a = acc.acceleration # get acceleration
-                # a1 = ?
+                a1 = a[0] # get X-axis acceleration
                 a2 = a[1] # get Y-axis acceleration
                 a3 = a[2] # get Z-axis acceleration
 
@@ -54,13 +55,14 @@ class MTConnectAdapter(object): # MTConnect adapter object
                 
                 self.adapter.begin_gather() # start to collection
 
+                # Fill a1 for collecting X-axis accel. value.
                 self.a2.set_value(str(a2)) # set SAMPLE value of a2 (Y-axis acceleration) data item
                 self.a3.set_value(str(a3)) # set SAMPLE value of a3 (Z-axis acceleration) data item
 
                 self.adapter.complete_gather() # end of collection
 
                 print("{} MTConnect data collection completed ... ".format(now)) # Printing out completed MTConnect collection
-                print("ADXL345: Yacc={}, Zacc={} mm/s^2\n".format(a2,a3)) # Printing out ADXL345 measured values
+                print("ADXL345: Xacc = {}, Yacc={}, Zacc={} mm/s^2\n".format(a1,a2,a3)) # Printing out ADXL345 measured values
 
                 time.sleep(1) # wait for 1 second = Sampling period
 
